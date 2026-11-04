@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -18,12 +17,19 @@ public class EnemyAI : MonoBehaviour
     public float attackDamage = 10f;
     public float attackCooldown = 1.5f;
 
+    [Header("Health")]
+    public float maxHealth = 100f;
+
+    private float currentHealth;
     private NavMeshAgent agent;
     private Transform player;
     private float nextAttackTime;
+    private bool isDead;
 
     void Start()
     {
+        currentHealth = maxHealth;
+
         agent = GetComponent<NavMeshAgent>();
 
         agent.speed = moveSpeed;
@@ -34,6 +40,9 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
+        if (isDead)
+            return;
+
         if (player == null)
         {
             FindPlayer();
@@ -65,9 +74,7 @@ public class EnemyAI : MonoBehaviour
             GameObject.FindGameObjectWithTag(playerTag);
 
         if (playerObject != null)
-        {
             player = playerObject.transform;
-        }
     }
 
     void ChasePlayer(float distance)
@@ -104,5 +111,36 @@ public class EnemyAI : MonoBehaviour
                 "На игроке отсутствует PlayerHealth!"
             );
         }
+    }
+
+    public void TakeDamage(float damage)
+    {
+        if (isDead)
+            return;
+
+        currentHealth -= damage;
+
+        Debug.Log(
+            gameObject.name + " получил урон: " +
+            damage + ". HP: " +
+            Mathf.Max(0, currentHealth) + "/" + maxHealth
+        );
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        isDead = true;
+
+        if (agent != null)
+            agent.enabled = false;
+
+        Debug.Log(gameObject.name + " уничтожен!");
+
+        Destroy(gameObject);
     }
 }
