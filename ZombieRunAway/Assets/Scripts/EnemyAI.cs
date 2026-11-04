@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -39,6 +40,9 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
+        if (!agent.isOnNavMesh)
+            return;
+
         float distance = Vector3.Distance(
             transform.position,
             player.position
@@ -50,6 +54,7 @@ public class EnemyAI : MonoBehaviour
         }
         else
         {
+            agent.isStopped = true;
             agent.ResetPath();
         }
     }
@@ -86,6 +91,18 @@ public class EnemyAI : MonoBehaviour
 
         nextAttackTime = Time.time + attackCooldown;
 
-        Debug.Log("Enemy атакует игрока! Урон: " + attackDamage);
+        PlayerHealth playerHealth =
+            player.GetComponent<PlayerHealth>();
+
+        if (playerHealth != null)
+        {
+            playerHealth.TakeDamage(attackDamage);
+        }
+        else
+        {
+            Debug.LogWarning(
+                "На игроке отсутствует PlayerHealth!"
+            );
+        }
     }
 }
